@@ -1,4 +1,4 @@
-curl -I http://web2.test.local/index.php
+curl -I http://web2.test.local/index.php
 
 powershell ./sql_hag_change_server.ps1 <SQLHighAvailabilityGroupName> <SQLMasterServerName>
 

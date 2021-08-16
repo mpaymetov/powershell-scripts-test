@@ -2,11 +2,26 @@
 
 Param (
     [string]$HighAvailabilityGroupName,
-    [string]$MasterServerName
+    [string]$MasterServer
 )
 
-$SlaveServer = "SlaveServer"
+$User = "test\admin"
+$PWord = ConvertTo-SecureString -String "admin" -AsPlainText -Force
+$Cred = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $User, $PWord
 
-$Path = "SQLSERVER:\Sql\$SlaveServer\InstanceName\AvailabilityGroups\$HighAvailabilityGroupName"
+$SecondaryServer = ""
 
-Switch-SqlAvailabilityGroup -Path $Path
+if ($MasterServer -eq "SQL01") {
+    $SecondaryServer = "SQL02"
+}
+
+if ($MasterServer -eq "SQL02") {
+    $SecondaryServer = "SQL01"
+}
+
+if ($SecondaryServer -ne "") {
+    Invoke-Command -ComputerName $MasterServer -Credential $Cred -ScriptBlock {
+        $Path = "SQLSERVER:\Sql\$SecondaryServer\InstanceName\AvailabilityGroups\$HighAvailabilityGroupName"
+        Switch-SqlAvailabilityGroup -Path $Path
+    }
+}
