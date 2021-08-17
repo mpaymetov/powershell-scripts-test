@@ -1,12 +1,8 @@
 Param (
     [string]$DnsServerResourceRecordCName
+    [string]$ADServer
 )
 
-$User = "test\admin"
-$PWord = ConvertTo-SecureString -String "admin" -AsPlainText -Force
-$Cred = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $User, $PWord
-
-$ADServer = "main.test.local"
-Invoke-Command -ComputerName $ADServer -Credential $Cred -ScriptBlock {
+Invoke-Command -ComputerName $ADServer -ScriptBlock {
 	Add-DnsServerResourceRecordCName -Name "webpms" -HostNameAlias "$DnsServerResourceRecordCName" -ZoneName "test.local"
 }
