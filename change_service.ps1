@@ -1,17 +1,15 @@
-$User = "test\admin"
-$PWord = ConvertTo-SecureString -String "admin" -AsPlainText -Force
-$Cred = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $User, $PWord
+Param (
+    [string]$ServiceName
+    [string]$ServerToStartService
+    [string]$ServerToStopService
+)
 
-$ServiceName = "w3svc"
-
-$ServerToStart = "web2.test.local"
-Invoke-Command -ComputerName $ServerToStart -Credential $Cred -ScriptBlock {
+Invoke-Command -ComputerName $ServerToStart -ScriptBlock {
   Get-Service $ServiceName | Set-Service -StartupType Automatic
   Get-Service $ServiceName | Start-Service  
 }
 
-$ServerToStop = "web1.test.local"
-Invoke-Command -ComputerName $ServerToStop -Credential $Cred -ScriptBlock {
+Invoke-Command -ComputerName $ServerToStop -ScriptBlock {
   Get-Service $ServiceName | Stop-Service
   Get-Service $ServiceName | Set-Service -StartupType Disabled
 }

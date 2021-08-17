@@ -1,0 +1,47 @@
+pipeline {
+    agent any
+
+    environment {
+        SECONDARY_WEB_SERVER_URL = "http://web2.test.local/index.php"
+
+        SQL_HIGH_AVAILABILITY_GROUP_NAME = "SQLHighAvailabilityGroupName"
+        SQL_PRIMARY_SERVER_NAME = "SQLPrimaryServerName"
+        SQL_SECONDARY_SERVER_NAME = "SQLSecondaryServerName"
+
+        WEB_SERVICE = "w3svc"
+        PRIMARY_WEB_SERVER = "web1.test.local"
+        SECONDARY_WEB_SERVER = "web2.test.local"
+
+        DNS_RECORD_NAME = "webpms"
+        DOMAIN_NAME = "test.local"
+        DOMAIN_CONTROLLER = "main.test.local"
+    }
+
+    stages {
+        stage ('1-warming up') {
+            steps {
+                sh "curl -I ${SECONDARY_WEB_SERVER_URL}"
+            }
+        }
+        stage ('2-change sql primary server') {
+            steps {
+                sh "powershell /home/user/scripts/sql_hag_change_server.ps1 ${SQL_HIGH_AVAILABILITY_GROUP_NAME} ${SQL_PRIMARY_SERVER_NAME} ${SQL_SECONDARY_SERVER_NAME}"
+            }
+        }
+        stage ('3-change services') {
+            steps {
+                sh "powershell /home/user/scripts/change_service.ps1 ${WEB_SERVICE} ${SECONDARY_WEB_SERVER} ${PRIMARY_WEB_SERVER}"
+            }
+        }
+        stage ('4-change dns record') {
+            steps {
+                sh "powershell /home/user/scripts/change_dns_record.ps1 ${DNS_RECORD_NAME} ${SECONDARY_WEB_SERVER} ${DOMAIN_NAME} ${DOMAIN_CONTROLLER}"
+            }
+        }
+        stage ('5-reload frontend proxy') {
+            steps {
+                sh "ssh root@frontend-proxy.test.local \"systemctl reload nginx\""
+            }
+        }
+    }
+}
