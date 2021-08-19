@@ -5,7 +5,6 @@ pipeline {
         SECONDARY_WEB_SERVER_URL = "http://web2.test.local/index.php"
 
         SQL_HIGH_AVAILABILITY_GROUP_NAME = "SQLHighAvailabilityGroupName"
-        SQL_PRIMARY_SERVER_NAME = "SQLPrimaryServerName"
         SQL_SECONDARY_SERVER_NAME = "SQLSecondaryServerName"
 
         WEB_SERVICE = "w3svc"
@@ -25,7 +24,7 @@ pipeline {
         }
         stage ('2-change sql primary server') {
             steps {
-                sh "powershell /home/user/scripts/sql_hag_change_server.ps1 ${SQL_HIGH_AVAILABILITY_GROUP_NAME} ${SQL_PRIMARY_SERVER_NAME} ${SQL_SECONDARY_SERVER_NAME}"
+                sh "powershell /home/user/scripts/sql_hag_change_server.ps1 ${SQL_HIGH_AVAILABILITY_GROUP_NAME} ${SQL_SECONDARY_SERVER_NAME}"
             }
         }
         stage ('3-change services') {

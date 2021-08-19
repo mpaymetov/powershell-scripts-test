@@ -1,12 +1,11 @@
-# use: sql_hag_change_server.ps1 <HighAvailabilityGroupName> <PrimaryServerName> <SecondaryServerName>
+# use: sql_hag_change_server.ps1 <HighAvailabilityGroupName> <SecondaryServerName>
 
 Param (
     [string]$HighAvailabilityGroupName,
-    [string]$PrimaryServerName
     [string]$SecondaryServerName
 )
 
-Invoke-Command -ComputerName $PrimaryServerName -ScriptBlock {
-    $Path = "SQLSERVER:\Sql\$SecondaryServerName\InstanceName\AvailabilityGroups\$HighAvailabilityGroupName"
-    Set-SqlAvailabilityGroup -Path $Path
+Invoke-Command -ComputerName $SecondaryServerName -ScriptBlock {
+    $Path = "SQLSERVER:\Sql\$SecondaryServerName\DEFAULT\AvailabilityGroups\$HighAvailabilityGroupName"
+    Switch-SqlAvailabilityGroup -Path $Path
 }
