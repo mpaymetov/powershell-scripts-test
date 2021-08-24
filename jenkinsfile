@@ -14,32 +14,35 @@ pipeline {
         DNS_RECORD_NAME = "webpms"
         DOMAIN_NAME = "test.local"
         DOMAIN_CONTROLLER = "main.test.local"
+
+        FRONTEND_PROXY_USER = "root"
+        FRONTEND_PROXY_SERVER = "frontend-proxy.test.local"
     }
 
     stages {
         stage ('1-warming up') {
             steps {
-                sh "curl -I ${SECONDARY_WEB_SERVER_URL}"
+                ./get_url.ps1  ${SECONDARY_WEB_SERVER_URL}
             }
         }
         stage ('2-change sql primary server') {
             steps {
-                sh "powershell /home/user/scripts/sql_hag_change_server.ps1 ${SQL_HIGH_AVAILABILITY_GROUP_NAME} ${SQL_SECONDARY_SERVER_NAME}"
+                ./sql_hag_change_server.ps1 ${SQL_HIGH_AVAILABILITY_GROUP_NAME} ${SQL_SECONDARY_SERVER_NAME}
             }
         }
         stage ('3-change services') {
             steps {
-                sh "powershell /home/user/scripts/change_service.ps1 ${WEB_SERVICE} ${SECONDARY_WEB_SERVER} ${PRIMARY_WEB_SERVER}"
+                ./change_service.ps1 ${WEB_SERVICE} ${SECONDARY_WEB_SERVER} ${PRIMARY_WEB_SERVER}
             }
         }
         stage ('4-change dns record') {
             steps {
-                sh "powershell /home/user/scripts/change_dns_record.ps1 ${DNS_RECORD_NAME} ${SECONDARY_WEB_SERVER} ${DOMAIN_NAME} ${DOMAIN_CONTROLLER}"
+                ./change_dns_record.ps1 ${DNS_RECORD_NAME} ${SECONDARY_WEB_SERVER} ${DOMAIN_NAME} ${DOMAIN_CONTROLLER}
             }
         }
         stage ('5-reload frontend proxy') {
             steps {
-                sh "ssh root@frontend-proxy.test.local \"systemctl reload nginx\""
+                ./reload_proxy.ps1 ${FRONTEND_PROXY_USER} ${FRONTEND_PROXY_SERVER}
             }
         }
     }
